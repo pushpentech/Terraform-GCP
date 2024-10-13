@@ -1,11 +1,19 @@
 pipeline {
     agent any
-
+	
     environment {
-        GOOGLE_APPLICATION_CREDENTIALS = credentials('gcp-service-account') // Referencing the GCP service account key
+        GOOGLE_APPLICATION_CREDENTIALS = credentials('gcp-service-account')
+	
     }
-
-    stage('Terraform Init') {
+	
+    stages {
+        stage('Git Checkout') {
+            steps {
+               git "https://github.com/Mishu-techAWS/Terraform-GCP.git"
+            }
+        }
+        
+        stage('Terraform Init') {
             steps {
                 script {
                     sh 'terraform init'
@@ -35,5 +43,4 @@ pipeline {
             }
         }
     }
-
-
+}
