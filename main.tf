@@ -1,46 +1,17 @@
-pipeline {
-    agent any
-	
-    environment {
-        GOOGLE_APPLICATION_CREDENTIALS = credentials('gcp-key')
-	GIT_TOKEN = credentials('git-token')
-    }
-	
-    stages {
-        stage('Git Checkout') {
-            steps {
-               git "https://${GIT_TOKEN}@github.com/vishal-bulbule/gcp-tf-jenkin.git"
-            }
-        }
-        
-        stage('Terraform Init') {
-            steps {
-                script {
-                    sh 'terraform init'
-                }
-            }
-        }
-        
-        stage('Terraform Plan') {
-            steps {
-                script {
-                    sh 'terraform plan -out=tfplan'
-                }
-            }
-        }
-
-	    stage('Manual Approval') {
-            steps {
-                input "Approve?"
-            }
-        }
-	    
-        stage('Terraform Apply') {
-            steps {
-                script {
-                    sh 'terraform apply tfplan'
-                }
-            }
-        }
-    }
+resource "google_storage_bucket" "my-bucket" {
+  name                     = "tt-githubdemo-bucket-001"
+  project                  = "tt-dev-001"
+  location                 = "US"
+  force_destroy            = true
+  public_access_prevention = "enforced"
 }
+#
+resource "google_storage_bucket" "my-bucket2" {
+  name                     = "tt-githubdemo-bucket-002"
+  project                  = "tt-dev-001"
+  location                 = "US"
+  force_destroy            = true
+  public_access_prevention = "enforced"
+}
+#
+### dummy
