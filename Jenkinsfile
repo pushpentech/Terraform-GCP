@@ -5,51 +5,35 @@ pipeline {
         GOOGLE_APPLICATION_CREDENTIALS = credentials('gcp-service-account') // Referencing the GCP service account key
     }
 
-    stages {
-        stage('Checkout Code') {
+    stage('Terraform Init') {
             steps {
-                git branch: 'main', url: 'https://github.com/Mishu-techAWS/Terraform-GCP.git'
+                script {
+                    sh 'terraform init'
+                }
             }
         }
-
-        stage('Terraform Init') {
-            steps {
-                sh '''
-                    cd /terraform
-                    terraform init
-                '''
-            }
-        }
-
+        
         stage('Terraform Plan') {
             steps {
-                sh '''
-                    cd /terraform
-                    terraform plan -out=tfplan
-                '''
+                script {
+                    sh 'terraform plan -out=tfplan'
+                }
             }
         }
 
+	    stage('Manual Approval') {
+            steps {
+                input "Approve?"
+            }
+        }
+	    
         stage('Terraform Apply') {
             steps {
-                input message: 'Proceed with Terraform Apply?'
-                sh '''
-                    cd /terraform
-                    terraform apply -auto-approve tfplan
-                '''
+                script {
+                    sh 'terraform apply tfplan'
+                }
             }
         }
     }
 
-    post {
-        always {
-            cleanWs() // Clean workspace after completion
-        }
-        success {
-            echo 'Terraform applied successfully on GCP!'
-        }
-        failure {
-            echo 'Terraform apply failed.'
-        }
-    }
-}
+
