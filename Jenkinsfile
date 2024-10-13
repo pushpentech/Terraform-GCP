@@ -1,46 +1,55 @@
 pipeline {
     agent any
-	
+
     environment {
-        GOOGLE_APPLICATION_CREDENTIALS = credentials('gcp-key')
-	GIT_TOKEN = credentials('git-token')
+        GOOGLE_APPLICATION_CREDENTIALS = credentials('gcp-service-account') // Referencing the GCP service account key
     }
-	
+
     stages {
-        stage('Git Checkout') {
+        stage('Checkout Code') {
             steps {
-               git "https://${GIT_TOKEN}@github.com/vishal-bulbule/gcp-tf-jenkin.git"
-            }
-        }
-        
-        stage('Terraform Init') {
-            steps {
-                script {
-                    sh 'terraform init'
-                }
-            }
-        }
-        
-        stage('Terraform Plan') {
-            steps {
-                script {
-                    sh 'terraform plan -out=tfplan'
-                }
+                git branch: 'main', url: 'https://github.com/yourusername/yourrepo.git'
             }
         }
 
-	    stage('Manual Approval') {
+        stage('Terraform Init') {
             steps {
-                input "Approve?"
+                sh '''
+                    cd /terraform
+                    terraform init
+                '''
             }
         }
-	    
+
+        stage('Terraform Plan') {
+            steps {
+                sh '''
+                    cd /terraform
+                    terraform plan -out=tfplan
+                '''
+            }
+        }
+
         stage('Terraform Apply') {
             steps {
-                script {
-                    sh 'terraform apply tfplan'
-                }
+                input message: 'Proceed with Terraform Apply?'
+                sh '''
+                    cd /terraform
+                    terraform apply -auto-approve tfplan
+                '''
             }
+        }
+    }
+
+    post {
+        always {
+            cleanWs() // Clean workspace after completion
+        }
+        success {
+            echo 'Terraform applied successfully on GCP!'
+        }
+        failure {
+            echo 'Terraform apply failed.'
         }
     }
 }
