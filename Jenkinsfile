@@ -8,7 +8,7 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                git branch: 'main', url: https://github.com/Mishu-techAWS/Terraform-GCP.git'
+                git branch: 'main', url: 'https://github.com/Mishu-techAWS/Terraform-GCP.git'
             }
         }
 
